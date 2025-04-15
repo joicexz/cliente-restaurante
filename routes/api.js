@@ -10,6 +10,7 @@ module.exports = (db) => {
     // Rotas de autenticação
     router.post('/clientes/register', authController.registerClient.bind(authController));
     router.post('/restaurantes/register', authController.registerRestaurant.bind(authController));
+    router.post('/entregadores/register', authController.registerEntregador.bind(authController));
     router.post('/login', authController.login.bind(authController));
 
     // Rotas de usuário (protegidas por autenticação)

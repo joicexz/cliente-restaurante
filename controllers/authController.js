@@ -128,6 +128,12 @@ class AuthController {
                     [user.id_usuario]
                 );
                 userData = restaurante[0];
+            } else if (user.tipo === 'entregador') {
+                const [entregador] = await req.db.execute(
+                    'SELECT * FROM entregador WHERE id_usuario = ?',
+                    [user.id_usuario]
+                );
+                userData = entregador[0];
             }
 
             res.status(200).json({
@@ -144,6 +150,60 @@ class AuthController {
         } catch (error) {
             console.error(error);
             res.status(500).json({ success: false, message: 'Erro ao fazer login' });
+        }
+    }
+
+    async registerEntregador(req, res) {
+        try {
+            const { email, senha, nome, telefone, cpf, cnh, veiculo, placa, endereco } = req.body;
+
+            // 1. Criar endereço
+            const [enderecoResult] = await req.db.execute(
+                `INSERT INTO endereco 
+             (cep, estado, cidade, bairro, rua, numero, complemento, tipo) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    endereco.cep, endereco.estado, endereco.cidade,
+                    endereco.bairro, endereco.rua, endereco.numero,
+                    endereco.complemento, 'residencial'
+                ]
+            );
+            const idEndereco = enderecoResult.insertId;
+
+            // 2. Criar usuário
+            const hashedPassword = bcrypt.hashSync(senha, 8);
+            const idUsuario = await this.userModel.create(email, hashedPassword, 'entregador');
+
+            // 3. Criar entregador
+            const [entregadorResult] = await req.db.execute(
+                `INSERT INTO entregador 
+             (id_usuario, nome, telefone, cpf, cnh, veiculo, placa) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [idUsuario, nome, telefone, cpf, cnh, veiculo, placa]
+            );
+            const idEntregador = entregadorResult.insertId;
+
+            // 4. Retornar dados do entregador criado
+            const [entregador] = await req.db.execute(
+                `SELECT e.*, u.email, u.ativo 
+             FROM entregador e
+             JOIN usuario u ON e.id_usuario = u.id_usuario
+             WHERE e.id_entregador = ?`,
+                [idEntregador]
+            );
+
+            res.status(201).json({
+                success: true,
+                message: 'Entregador registrado com sucesso',
+                data: entregador[0]
+            });
+        } catch (error) {
+            console.error('Erro ao registrar entregador:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao registrar entregador',
+                error: error.message
+            });
         }
     }
 }

@@ -1,0 +1,95 @@
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=Joice768*
+DB_NAME=service_app_db
+JWT_SECRET=Xoice75638940*
+
+REGISTRO CLIENTE
+
+curl -X POST http://localhost:3001/api/clientes/register \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "julia@exemplo.com",
+  "senha": "senha2909",
+  "nome": "joice",
+  "telefone": "22555554444",
+  "cpf": "111.555.777-99",
+  "data_nascimento": "2007-09-29",
+  "endereco": {
+    "cep": "111111111",
+    "estado": "SP",
+    "cidade": "São Paulo",
+    "bairro": "Centro",
+    "rua": "Rua da Paz",
+    "numero": 42,
+    "complemento": "Apto 102"
+  }
+}'
+
+REGISTRO RESTAURANTE
+
+curl -X POST http://localhost:3001/api/restaurantes/register \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "restaurante_joice@exemplo.com",
+  "senha": "senha123",
+  "nome": "Restaurante Joice",
+  "cnpj": "12.345.678/0001-99",
+  "telefone": "1122223333",
+  "descricao": "Restaurante de comida teste",
+  "tempo_medio_entrega": 30,
+  "taxa_entrega": 5.90,
+  "horario_abertura": "11:00:00",
+  "horario_fechamento": "22:00:00",
+  "endereco": {
+    "cep": "01311000",
+    "estado": "SP",
+    "cidade": "São Paulo",
+    "bairro": "Centro",
+    "rua": "Rua Teste",
+    "numero": 456,
+    "complemento": "Loja 1"
+  }
+}'
+
+REGISTRO ENTREGADOR
+
+curl -X POST http://localhost:3001/api/entregadores/register \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "entregador_Joice@exemplo.com",
+  "senha": "senha768",
+  "nome": "Joice Entregadora",
+  "telefone": "11988889999",
+  "cpf": "555.666.777-88",
+  "cnh": "12345678901",
+  "veiculo": "Moto Honda CG 160",
+  "placa": "ABC1D23",
+  "endereco": {
+    "cep": "01311000",
+    "estado": "SP",
+    "cidade": "São Paulo",
+    "bairro": "Centro",
+    "rua": "Rua do Entregador",
+    "numero": 789,
+    "complemento": "Casa 2"
+  }
+}'
+
+LOGIN CLIENTE E RESTAURANTE E ENTREGADOR
+
+curl -X POST http://localhost:3001/api/login \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "restaurante_joice@exemplo.com",
+  "senha": "senha123"
+}'
+
+
+ROTA PROTEGIDA
+
+curl -X GET http://localhost:3001/api/usuarios/ID_USUARIO \
+-H "Authorization: Bearer TOKEN" \
+-H "Content-Type: application/json"
+
+
