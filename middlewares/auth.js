@@ -7,7 +7,7 @@ function authenticate(req, res, next) {
         return res.status(401).json({ success: false, message: 'Token não fornecido' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, decoded) => {
+    jwt.verify(token, process.env.JWT_SECRET || 'JWTsenha*', (err, decoded) => {
         if (err) {
             return res.status(401).json({ success: false, message: 'Token inválido' });
         }

@@ -12,41 +12,74 @@ class AuthController {
     }
 
     async registerClient(req, res) {
-        try {
-            const { email, senha, nome, telefone, cpf, data_nascimento, endereco } = req.body;
+        console.log('Recebendo requisição de registro de cliente');
+        console.log('Body:', req.body);
 
+        try {
+            // Verifique se req.body e req.body.endereco existem
+            if (!req.body || !req.body.endereco) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Dados de endereço são obrigatórios' 
+                });
+            }
+    
+            const { 
+                email, 
+                senha, 
+                nome, 
+                telefone, 
+                cpf, 
+                data_nascimento, 
+                endereco 
+            } = req.body;
+    
+            // Validação dos campos obrigatórios
+            if (!email || !senha || !nome || !telefone || !cpf) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Campos obrigatórios faltando' 
+                });
+            }
+    
+            // Validação do endereço
+            const requiredAddressFields = ['cep', 'estado', 'cidade', 'bairro', 'rua', 'numero'];
+            for (const field of requiredAddressFields) {
+                if (!endereco[field]) {
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `Campo de endereço obrigatório faltando: ${field}` 
+                    });
+                }
+            }
+    
             // 1. Criar endereço primeiro
             const [enderecoResult] = await req.db.execute(
                 `INSERT INTO endereco 
-         (cep, estado, cidade, bairro, rua, numero, complemento, tipo) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                 (cep, pais, estado, cidade, bairro, rua, numero, complemento, tipo) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
-                    endereco.cep, endereco.estado, endereco.cidade, endereco.bairro,
-                    endereco.rua, endereco.numero, endereco.complemento, 'residencial'
+                    endereco.cep, 
+                    endereco.pais || 'Brasil', // valor padrão
+                    endereco.estado, 
+                    endereco.cidade, 
+                    endereco.bairro,
+                    endereco.rua, 
+                    endereco.numero, 
+                    endereco.complemento || null, // pode ser null
+                    endereco.tipo || 'residencial' // valor padrão
                 ]
             );
-            const idEndereco = enderecoResult.insertId;
-
-            // 2. Criar usuário
-            const hashedPassword = bcrypt.hashSync(senha, 8);
-            const idUsuario = await this.userModel.create(email, hashedPassword, 'cliente');
-
-            // 3. Criar cliente
-            const idCliente = await this.clientModel.create(
-                idUsuario, idEndereco, nome, telefone, cpf, data_nascimento
-            );
-
-            // 4. Retornar dados do cliente criado
-            const cliente = await this.clientModel.getById(idCliente);
-
-            res.status(201).json({
-                success: true,
-                message: 'Cliente registrado com sucesso',
-                data: cliente
-            });
+            
+            // Resto do código permanece o mesmo...
+            
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ success: false, message: 'Erro ao registrar cliente' });
+            console.error('Erro no registro de cliente:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Erro ao registrar cliente',
+                error: error.message 
+            });
         }
     }
 

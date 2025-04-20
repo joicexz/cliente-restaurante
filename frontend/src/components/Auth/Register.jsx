@@ -1,0 +1,466 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  TextField, Button, Container, Box, Typography, 
+  FormControl, InputLabel, Select, MenuItem, Grid,
+  CircularProgress
+} from '@mui/material';
+
+const Register = () => {
+  const [userType, setUserType] = useState('cliente');
+  const [formData, setFormData] = useState({
+    email: '',
+    senha: '',
+    nome: '',
+    telefone: '',
+    cpf: '',
+    cnpj: '',
+    cnh: '',
+    veiculo: '',
+    placa: '',
+    // Campos de endereço
+    cep: '',
+    pais: 'Brasil',
+    estado: '',
+    cidade: '',
+    bairro: '',
+    rua: '',
+    numero: '',
+    complemento: '',
+    ponto_referencia: '',
+    tipo_endereco: 'residencial'
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    // Validação básica dos campos obrigatórios
+    if (!formData.email || !formData.senha || !formData.nome || !formData.telefone) {
+      setError('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
+
+    // Validações específicas por tipo de usuário
+    // if (userType === 'cliente' && !formData.cpf) {
+    //   setError('CPF é obrigatório para clientes');
+    //   return;
+    // }
+
+    // if (userType === 'restaurante' && !formData.cnpj) {
+    //   setError('CNPJ é obrigatório para restaurantes');
+    //   return;
+    // }
+
+    // if (userType === 'entregador' && (!formData.cpf || !formData.cnh || !formData.veiculo || !formData.placa)) {
+    //   setError('Todos os campos são obrigatórios para entregadores');
+    //   return;
+    // }
+
+    // Validação do endereço (exceto para entregadores)
+    if (userType !== 'entregador') {
+      const requiredAddressFields = ['cep', 'estado', 'cidade', 'bairro', 'rua', 'numero'];
+      const missingFields = requiredAddressFields.filter(field => !formData[field]);
+      
+      if (missingFields.length > 0) {
+        setError(`Preencha todos os campos de endereço: ${missingFields.join(', ')}`);
+        return;
+      }
+    }
+
+    try {
+      setLoading(true);
+
+      // Prepara os dados no formato que o backend espera
+      const requestData = {
+        email: formData.email,
+        senha: formData.senha,
+        nome: formData.nome,
+        telefone: formData.telefone,
+        // Campos específicos por tipo de usuário
+        ...(userType === 'cliente' && { 
+          cpf: formData.cpf,
+          data_nascimento: formData.data_nascimento || null
+        }),
+        ...(userType === 'restaurante' && { 
+          cnpj: formData.cnpj,
+          descricao: formData.descricao || '',
+          tempo_medio_entrega: formData.tempo_medio_entrega || 30,
+          taxa_entrega: formData.taxa_entrega || 0
+        }),
+        ...(userType === 'entregador' && { 
+          cpf: formData.cpf,
+          cnh: formData.cnh,
+          veiculo: formData.veiculo,
+          placa: formData.placa
+        }),
+        // Estrutura do endereço como objeto aninhado (opcional para entregadores)
+        ...(userType !== 'entregador' && {
+          endereco: {
+            cep: formData.cep,
+            pais: formData.pais || 'Brasil',
+            estado: formData.estado,
+            cidade: formData.cidade,
+            bairro: formData.bairro,
+            rua: formData.rua,
+            numero: formData.numero,
+            complemento: formData.complemento || '',
+            ponto_referencia: formData.ponto_referencia || '',
+            tipo: formData.tipo_endereco || 'residencial'
+          }
+        })
+      };
+
+      // const response = await fetch(`${import.meta.env.VITE_API_URL}/api/register/${userType}`, {
+      const response = await fetch(`http://localhost:3001/api/register/${userType}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      // Verifica primeiro se a resposta está OK
+      if (!response.ok) {
+        // Tenta extrair a mensagem de erro do corpo da resposta
+        let errorMessage = `Erro ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          console.warn('Não foi possível parsear o corpo de erro:', e);
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Tenta parsear o JSON apenas se a resposta for bem-sucedida
+      const data = await response.json();
+
+      // Redireciona com mensagem de sucesso
+      navigate('/login', { 
+        state: { 
+          registrationSuccess: true,
+          message: 'Cadastro realizado com sucesso!'
+        } 
+      });
+      
+    } catch (err) {
+      console.error('Erro no cadastro:', err);
+      
+      // Tratamento específico para erros de JSON
+      if (err instanceof SyntaxError) {
+        setError('Resposta inválida do servidor');
+      } else if (err.message.includes('Failed to fetch')) {
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão.');
+      } else {
+        setError(err.message || 'Ocorreu um erro durante o cadastro. Por favor, tente novamente.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderExtraFields = () => {
+    switch(userType) {
+      case 'restaurante':
+        return (
+          <>
+            <TextField
+              name="cnpj"
+              label="CNPJ"
+              fullWidth
+              margin="normal"
+              value={formData.cnpj}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              name="descricao"
+              label="Descrição do Restaurante"
+              fullWidth
+              margin="normal"
+              value={formData.descricao}
+              onChange={handleChange}
+            />
+          </>
+        );
+      case 'entregador':
+        return (
+          <>
+            <TextField
+              name="cpf"
+              label="CPF"
+              fullWidth
+              margin="normal"
+              value={formData.cpf}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              name="cnh"
+              label="CNH"
+              fullWidth
+              margin="normal"
+              value={formData.cnh}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              name="veiculo"
+              label="Veículo"
+              fullWidth
+              margin="normal"
+              value={formData.veiculo}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              name="placa"
+              label="Placa"
+              fullWidth
+              margin="normal"
+              value={formData.placa}
+              onChange={handleChange}
+              required
+            />
+          </>
+        );
+      default: // cliente
+        return (
+          <TextField
+            name="cpf"
+            label="CPF"
+            fullWidth
+            margin="normal"
+            value={formData.cpf}
+            onChange={handleChange}
+            required
+          />
+        );
+    }
+  };
+
+  const renderAddressFields = () => {
+    return (
+      <Box sx={{ mt: 3, borderTop: '1px solid #eee', pt: 3 }}>
+        <Typography variant="h6" gutterBottom>Endereço</Typography>
+        
+        <Grid container spacing={2}>
+          <Grid xs={12} sm={6}>
+            <TextField
+              name="cep"
+              label="CEP"
+              fullWidth
+              margin="normal"
+              value={formData.cep}
+              onChange={handleChange}
+              required={userType !== 'entregador'}
+            />
+          </Grid>
+          <Grid xs={12} sm={6}>
+            <TextField
+              name="pais"
+              label="País"
+              fullWidth
+              margin="normal"
+              value={formData.pais}
+              onChange={handleChange}
+              required={userType !== 'entregador'}
+            />
+          </Grid>
+          <Grid xs={12} sm={6}>
+            <TextField
+              name="estado"
+              label="Estado"
+              fullWidth
+              margin="normal"
+              value={formData.estado}
+              onChange={handleChange}
+              required={userType !== 'entregador'}
+            />
+          </Grid>
+          <Grid xs={12} sm={6}>
+            <TextField
+              name="cidade"
+              label="Cidade"
+              fullWidth
+              margin="normal"
+              value={formData.cidade}
+              onChange={handleChange}
+              required={userType !== 'entregador'}
+            />
+          </Grid>
+          <Grid xs={12} sm={6}>
+            <TextField
+              name="bairro"
+              label="Bairro"
+              fullWidth
+              margin="normal"
+              value={formData.bairro}
+              onChange={handleChange}
+              required={userType !== 'entregador'}
+            />
+          </Grid>
+          <Grid xs={12} sm={6}>
+            <TextField
+              name="rua"
+              label="Rua"
+              fullWidth
+              margin="normal"
+              value={formData.rua}
+              onChange={handleChange}
+              required={userType !== 'entregador'}
+            />
+          </Grid>
+          <Grid xs={12} sm={4}>
+            <TextField
+              name="numero"
+              label="Número"
+              fullWidth
+              margin="normal"
+              value={formData.numero}
+              onChange={handleChange}
+              required={userType !== 'entregador'}
+            />
+          </Grid>
+          <Grid xs={12} sm={4}>
+            <TextField
+              name="complemento"
+              label="Complemento"
+              fullWidth
+              margin="normal"
+              value={formData.complemento}
+              onChange={handleChange}
+            />
+          </Grid>
+          <Grid xs={12} sm={4}>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Tipo de Endereço</InputLabel>
+              <Select
+                name="tipo_endereco"
+                value={formData.tipo_endereco}
+                onChange={handleChange}
+                label="Tipo de Endereço"
+                required={userType !== 'entregador'}
+              >
+                <MenuItem value="residencial">Residencial</MenuItem>
+                <MenuItem value="comercial">Comercial</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid xs={12}>
+            <TextField
+              name="ponto_referencia"
+              label="Ponto de Referência"
+              fullWidth
+              margin="normal"
+              value={formData.ponto_referencia}
+              onChange={handleChange}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+    );
+  };
+
+  return (
+    <Container maxWidth="md">
+      <Box sx={{ mt: 8, p: 4, boxShadow: 3, borderRadius: 2 }}>
+        <Typography variant="h4" gutterBottom>Cadastro</Typography>
+        {error && (
+          <Typography color="error" sx={{ mb: 2 }}>
+            {error}
+          </Typography>
+        )}
+        
+        <form onSubmit={handleSubmit}>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Tipo de Usuário</InputLabel>
+            <Select
+              value={userType}
+              onChange={(e) => setUserType(e.target.value)}
+              label="Tipo de Usuário"
+              required
+            >
+              <MenuItem value="cliente">Cliente</MenuItem>
+              <MenuItem value="restaurante">Restaurante</MenuItem>
+              <MenuItem value="entregador">Entregador</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Grid container spacing={2}>
+            <Grid xs={12} sm={6}>
+              <TextField
+                name="email"
+                label="Email"
+                type="email"
+                fullWidth
+                margin="normal"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid xs={12} sm={6}>
+              <TextField
+                name="senha"
+                label="Senha"
+                type="password"
+                fullWidth
+                margin="normal"
+                value={formData.senha}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid xs={12} sm={6}>
+              <TextField
+                name="nome"
+                label={userType === 'restaurante' ? 'Nome do Restaurante' : 'Nome Completo'}
+                fullWidth
+                margin="normal"
+                value={formData.nome}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid xs={12} sm={6}>
+              <TextField
+                name="telefone"
+                label="Telefone"
+                fullWidth
+                margin="normal"
+                value={formData.telefone}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+          </Grid>
+
+          {renderExtraFields()}
+          {userType !== 'entregador' && renderAddressFields()}
+
+          <Button 
+            type="submit" 
+            variant="contained" 
+            fullWidth 
+            sx={{ mt: 3 }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Cadastrar'}
+          </Button>
+        </form>
+      </Box>
+    </Container>
+  );
+};
+
+export default Register;
