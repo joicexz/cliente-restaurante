@@ -43,7 +43,7 @@ Este projeto foi desenvolvido como parte da avaliação do componente curricular
 │       └── components/  
 │           ├── Auth/    # Componentes de Login e Registro
 │           └── Layout/  # Componentes visuais como Navbar
-│   └── vite.config.js   # Verificação de tokens
+│   └── vite.config.js   # Configuração do Vite
 ├── models/              # Modelos de banco de dados
 ├── routes/              # Definição de rotas da API
 └── app.js               # Arquivo principal do backend (Express)
