@@ -541,7 +541,7 @@ const Register = () => {
             type="submit"
             variant="contained"
             fullWidth
-            sx={{ mt: 3 }}
+            sx={{ mt: 3, backgroundColor: '#a40000'}}
             disabled={loading}
           >
             {loading ? <CircularProgress size={24} /> : "Cadastrar"}

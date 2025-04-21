@@ -3,7 +3,7 @@ import { AppBar, Toolbar, Button, Typography } from '@mui/material'
 
 const Navbar = () => {
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{ backgroundColor: '#a40000' }}>
       <Toolbar>
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           Delivery App
