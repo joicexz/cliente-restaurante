@@ -8,7 +8,7 @@ module.exports = (db) => {
     const userController = new UserController(db);
 
     // Rotas de autenticação
-
+    
     router.post('/register/cliente', authController.registerClient.bind(authController));
     router.post('/register/restaurante', authController.registerRestaurant.bind(authController));
     router.post('/register/entregador', authController.registerEntregador.bind(authController));

@@ -118,8 +118,10 @@ const Register = () => {
           }
         })
       };
-
-      // const response = await fetch(`${import.meta.env.VITE_API_URL}/api/register/${userType}`, {
+      console.log(requestData);
+      console.log("Enviando request para:", `http://localhost:3001/api/register/${userType}`);
+      
+      // const response = await fetch(`http://localhost:3001/api/register/cliente`, {
       const response = await fetch(`http://localhost:3001/api/register/${userType}`, {
         method: 'POST',
         headers: {
@@ -127,22 +129,26 @@ const Register = () => {
         },
         body: JSON.stringify(requestData),
       });
-
+      console.log("response: ",response);
+      
       // Verifica primeiro se a resposta está OK
       if (!response.ok) {
         // Tenta extrair a mensagem de erro do corpo da resposta
+        console.log('passou aqui');
         let errorMessage = `Erro ${response.status}: ${response.statusText}`;
         try {
           const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
+          console.log('e aqui');
         } catch (e) {
           console.warn('Não foi possível parsear o corpo de erro:', e);
+          console.log('aqui tbm');
         }
         throw new Error(errorMessage);
       }
 
       // Tenta parsear o JSON apenas se a resposta for bem-sucedida
-      const data = await response.json();
+      // const data = await response.json();
 
       // Redireciona com mensagem de sucesso
       navigate('/login', { 

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+// const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const Client = require('../models/Client');
 const Restaurant = require('../models/restaurant');
@@ -70,11 +71,31 @@ class AuthController {
                     endereco.tipo || 'residencial' // valor padrão
                 ]
             );
-            
-            // Resto do código permanece o mesmo...
-            
-        } catch (error) {
-            console.error('Erro no registro de cliente:', error);
+            const idEndereco = enderecoResult.insertId;
+ 
+             // 2. Criar usuário
+             const hashedPassword = bcrypt.hashSync(senha, 8);
+             const idUsuario = await this.userModel.create(email, hashedPassword, 'cliente');
+             console.log("ID USUARIO:", idUsuario);
+             
+             
+             // 3. Criar cliente
+             const idCliente = await this.clientModel.create(
+                 idUsuario, idEndereco, nome, telefone, cpf, data_nascimento
+                );
+                console.log("ID CLIENTE:", idCliente);
+                
+                // 4. Retornar dados do cliente criado
+             const cliente = await this.clientModel.getById(idCliente);
+ 
+             res.status(201).json({
+                 success: true,
+                 message: 'Cliente registrado com sucesso',
+                 data: cliente
+                });
+                
+            } catch (error) {
+            console.error('Erro no registro de cliente:');
             res.status(500).json({ 
                 success: false, 
                 message: 'Erro ao registrar cliente',

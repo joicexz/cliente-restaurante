@@ -6,12 +6,12 @@ JWT_SECRET=Xoice75638940*
 
 REGISTRO CLIENTE
 
-curl -X POST http://localhost:3001/api/clientes/register \
+curl -X POST http://localhost:3001/api/register/cliente \
 -H "Content-Type: application/json" \
 -d '{
-  "email": "julia@exemplo.com",
-  "senha": "senha2909",
-  "nome": "joice",
+  "email": "nico@exemplo.com",
+  "senha": "123",
+  "nome": "nico",
   "telefone": "22555554444",
   "cpf": "111.555.777-99",
   "data_nascimento": "2007-09-29",
