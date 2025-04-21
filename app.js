@@ -5,7 +5,12 @@ const db = require('./config/database');
 const apiRoutes = require('./routes/api');
 
 const app = express();
-app.use(cors());
+
+//Configuração de CORS
+app.use(cors({
+  origin: 'http://localhost:5173', // frontend
+  credentials: true
+}));
 app.use(express.json());
 
 // Adiciona a conexão do banco de dados ao objeto de requisição

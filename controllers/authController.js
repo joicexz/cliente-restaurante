@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-// const bcrypt = require('bcryptjs');
 const User = require("../models/user");
 const Client = require("../models/Client");
 const Restaurant = require("../models/restaurant");
@@ -214,18 +213,26 @@ console.log("ID RESTAURANTE", idRestaurante);
 
   async login(req, res) {
     try {
-      const { email, senha } = req.body;
+      const { email, password } = req.body;
+      console.log('REQ.BODY:', req.body);
+
 
       // 1. Verificar se usuário existe
       const user = await this.userModel.findByEmail(email);
+      console.log("USUÁRIO:",user);
+      // console.log("FIND:",user);
+      
       if (!user) {
         return res
           .status(404)
           .json({ success: false, message: "Usuário não encontrado" });
       }
 
+      console.log('Senha digitada:', password);
+      console.log('Senha do banco:', user.password);
+
       // 2. Verificar senha
-      const passwordIsValid = bcrypt.compareSync(senha, user.senha);
+      const passwordIsValid = bcrypt.compareSync(password, user.senha);
       if (!passwordIsValid) {
         return res
           .status(401)
