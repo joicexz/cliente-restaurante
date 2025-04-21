@@ -62,16 +62,18 @@ CREATE TABLE restaurante (
 CREATE TABLE entregador (
     id_entregador INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     id_usuario INT NOT NULL,
+    id_endereco INT,
     nome VARCHAR(100) NOT NULL,
     telefone VARCHAR(15) NOT NULL,
     cpf VARCHAR(14) UNIQUE,
     cnh VARCHAR(20),
     veiculo VARCHAR(50),
-    placa VARCHAR(10),
+    placa VARCHAR(20),
     avaliacao_media DECIMAL(3,2) DEFAULT 0.0,
     total_entregas INT DEFAULT 0,
     disponivel BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (id_endereco) REFERENCES endereco(id_endereco)
 );
 
 -- Tabela Categoria (para classificação de restaurantes)
