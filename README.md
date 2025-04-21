@@ -3,8 +3,6 @@
 
 Este projeto foi desenvolvido como parte da avaliação do componente curricular Sistemas Web II, com o objetivo de criar um sistema de gerenciamento para clientes, restaurantes e entregadores (delivery).
 
----
-
 ## ⚙️ Como rodar o projeto
 
 1. **Clone o repositório**
@@ -46,7 +44,7 @@ Este projeto foi desenvolvido como parte da avaliação do componente curricular
 │           ├── Auth/    # Componentes de Login e Registro
 │           └── Layout/  # Componentes visuais como Navbar
 │   └── vite.config.js   # Verificação de tokens
-├── models/              # Modelos de banco de dados (ORM)
+├── models/              # Modelos de banco de dados
 ├── routes/              # Definição de rotas da API
 └── app.js               # Arquivo principal do backend (Express)
 
@@ -59,7 +57,6 @@ Este projeto foi desenvolvido como parte da avaliação do componente curricular
 ###  Login
 
 **POST** `/api/login`
-Content-Type: application/json
 
 ```json
 {
@@ -106,4 +103,4 @@ Content-Type: application/json
 ---
 
 ## Conslusão:
-Este projeto atende com sucesso à proposta do Serviço 1, oferecendo cadastro, login e autenticação (JWT), sendo uma base sólida e segura para o gerenciamento de clientes e restaurantes dentro de um sistema de delivery.
+Este projeto atende aos requisitos do Serviço 1, oferecendo cadastro, login e autenticação (JWT), sendo uma base sólida e segura para o gerenciamento de clientes e restaurantes dentro de um sistema de delivery.
